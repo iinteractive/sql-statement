@@ -1412,7 +1412,22 @@ sub SET_FUNCTION_SPEC
 {
     my ( $self, $col_str ) = @_;
 
-    if ( $col_str =~ m/^(COUNT|AVG|SUM|MAX|MIN) \((.*)\)\s*$/i )
+    if ( $col_str =~ /\(.*\(/ ) 
+    {
+        # SET_FUNCTION_SPEC can't handle multiple, complex functions?
+        # https://rt.cpan.org/Ticket/Display.html?id=80423
+        # Instead of dying later on just flag this as 'complex' and don't sweat the details (for now)...
+        my $value = {
+                      name     => 'complex',
+                      arg      => 'complex',
+                      argstr   => 'complex',
+                      distinct => 'unknown',
+                      type     => 'setfunc',
+                      fullorg  => $col_str,
+                    };
+        return $value;
+    }
+    elsif ( $col_str =~ m/^(COUNT|AVG|SUM|MAX|MIN) \((.*)\)\s*$/i )
     {
         my $set_function_name    = uc $1;
         my $set_function_arg_str = $2;
